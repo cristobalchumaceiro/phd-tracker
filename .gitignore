@@ -1,0 +1,14 @@
+# Virtual environments
+.venv/
+__pycache__/
+*.pyc
+
+# Local database (keeps your processed jobs private/local)
+jobs_database.json
+
+# Personal documents
+cv.pdf
+
+# OS files
+.DS_Store
+user_profile.md
