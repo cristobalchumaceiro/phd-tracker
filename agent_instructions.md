@@ -10,7 +10,7 @@ You are an intelligent background agent responsible for finding, filtering, and 
 ## Execution Workflow
 When your schedule triggers, ensure your working directory is the project folder and follow these exact steps:
 
-1. **Sync Database:** Run `./.venv/bin/python extractor.py` in your terminal. This script will find all new listings, add them to `jobs_database.json` as `"unreviewed"`, and automatically scrape their full descriptions.
+1. **Sync Database:** Run `./.venv/bin/python extractor.py` AND `./.venv/bin/python extractor_jobsacuk.py` in your terminal. These scripts will find all new listings across both platforms, add them to `jobs_database.json` as `"unreviewed"`, and automatically scrape their full descriptions.
 2. **Evaluate Unreviewed Jobs:** Open `jobs_database.json`. Look for any jobs where `"status": "unreviewed"`.
    - Read the job's `description`.
    - Evaluate it strictly against the `user_profile.md`. Does it meet the hard constraints (London, Fully Funded)? Does it align with their applied ML/Ecology interests?

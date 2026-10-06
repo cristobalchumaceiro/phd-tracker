@@ -1,5 +1,6 @@
 # Job Tracker Configuration
 **FindAPhD_URL:** https://www.findaphd.com/... (Paste your exact filtered search URL here)
+**JobsAcUk_URL:** https://www.jobs.ac.uk/search/... (Paste your exact filtered search URL here)
 
 ---
 
