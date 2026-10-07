@@ -6,12 +6,13 @@ The system runs completely autonomously in the background, waking up daily to fe
 
 ## How It Works
 1. **The Scraper (`extractor.py`)**: A Python Playwright script that mimics human behavior (randomised delays, scrolling) to bypass Cloudflare. It scrapes job descriptions and saves them to a local JSON database.
-2. **The AI Brain (`agent_instructions.md`)**: A detailed prompt that instructs a scheduled AI agent to read the database, evaluate new jobs against the user's constraints, research supervisors, and output a daily report.
+2. **The AI Brain (`.agents/skills/phd-tracker/SKILL.md`)**: A custom Antigravity Skill that teaches the agent how to run the tracking pipeline, parse the JSON, and output the daily rundown.
 
 ## Files
 *   `extractor.py` - The stealth Playwright scraper for FindAPhD.
 *   `extractor_jobsacuk.py` - The stealth Playwright scraper for jobs.ac.uk.
-*   `agent_instructions.md` - The execution workflow for the AI agent.
+*   `.agents/skills/phd-tracker/SKILL.md` - The Antigravity Skill definition.
+*   `generate_report.py` - Parses the database and creates the markdown rundown.
 *   `user_profile.md` - Your personal background, CV details, and hard constraints for the AI to judge against.
 *   `requirements.txt` - Python dependencies.
 *   *(Generated)* `jobs_database.json` - Local state machine tracking `unreviewed`, `pending`, and `rejected` jobs.
@@ -31,21 +32,11 @@ playwright install chromium
 Rename `user_profile.template.md` to `user_profile.md`. 
 Inside, paste your specific FindAPhD search URL at the top, and write out your CV details, research interests, and hard constraints (e.g., location, funding requirements).
 
-### 3. Schedule the AI Agent
-To run this autonomously every day without fail, it is highly recommended to use your OS-level task scheduler (like macOS `launchd` or Linux `cron`) rather than an in-chat timer, as chat-timers can be lost if the server restarts.
+### 3. Run the Pipeline
+To update the database and get your daily rundown, open the chat window with the Antigravity agent in this workspace and simply ask it to execute the skill:
 
-**For Antigravity (using macOS LaunchAgent):**
-Create a `.plist` file in `~/Library/LaunchAgents/` to trigger the AI automatically (e.g., at 8:30 AM). Replace the placeholders with your actual paths and conversation ID:
-```xml
-    <key>ProgramArguments</key>
-    <array>
-        <string>/bin/bash</string>
-        <string>-c</string>
-        <string>PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin cd /path/to/phd-tracker && /path/to/agy --conversation YOUR_CHAT_ID --print "Please read and execute the workflow defined in agent_instructions.md"</string>
-    </array>
+```
+"Run the PhD tracker"
 ```
 
-**For Claude / ChatGPT Desktop:**
-```
-"Please read agent_instructions.md. I want you to create a local OS cron job / LaunchAgent on my machine that triggers you every day at 8:30 AM to execute this exact workflow and deliver the results in this chat."
-```
+Because the skill is built into the workspace (in `.agents/skills/phd-tracker/SKILL.md`), the agent will automatically discover it, run the scrapers and parsers in the foreground, and present the final Markdown rundown safely in the chat window.
