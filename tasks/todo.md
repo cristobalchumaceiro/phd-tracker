@@ -31,13 +31,13 @@
 **Description:** Modify `.agents/skills/phd-tracker/SKILL.md` to introduce dual modes (Discovery vs. ATS Tracking) so the agent acts as an ATS.
 
 **Acceptance criteria:**
-- [ ] Add ATS definitions: statuses (`shortlisted`, `contacted`, `applied`, `interviewing`, `offered`, `rejected_post_app`) and timeline tracking.
-- [ ] Clearly define Mode 1 (Discovery): Scraping and evaluating new jobs (the current functionality).
-- [ ] Clearly define Mode 2 (ATS / Tracking): Instruct the agent how to use the `update` command to move jobs between statuses, add timeline notes, and display a Kanban-style summary of tracked jobs.
-- [ ] Ensure the prompt explicitly instructs the agent to choose the right mode based on the user's request.
+- [x] Add ATS definitions: statuses (`shortlisted`, `contacted`, `applied`, `interviewing`, `offered`, `rejected_post_app`) and timeline tracking.
+- [x] Clearly define Mode 1 (Discovery): Scraping and evaluating new jobs (the current functionality).
+- [x] Clearly define Mode 2 (ATS / Tracking): Instruct the agent how to use the `update` command to move jobs between statuses, add timeline notes, and display a Kanban-style summary of tracked jobs.
+- [x] Ensure the prompt explicitly instructs the agent to choose the right mode based on the user's request.
 
 **Verification:**
-- [ ] Manual check: Review `SKILL.md` to ensure the instructions are unambiguous and properly format the dual modes.
+- [x] Manual check: Review `SKILL.md` to ensure the instructions are unambiguous and properly format the dual modes.
 
 **Dependencies:** 1
 
@@ -49,7 +49,7 @@
 ---
 
 ## Checkpoint: After Task 2
-- [ ] The agent instructions successfully encode the new workflow without breaking the old one.
+- [x] The agent instructions successfully encode the new workflow without breaking the old one.
 
 ---
 

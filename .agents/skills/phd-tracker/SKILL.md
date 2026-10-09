@@ -1,38 +1,42 @@
 ---
 name: phd-tracker
 description: >-
-  Use this skill when the user asks to run the PhD tracker, check for new PhD jobs, or update the job database.
+  Use this skill when the user asks to run the PhD tracker, check for new PhD jobs, or update the job database. Acts as both a job discovery tool and an Application Tracking System (ATS).
 ---
 
-# PhD Tracker Runbook
+# PhD Tracker & ATS Runbook
 
-Follow these exact steps to update the job database and deliver the daily rundown to the user:
+This skill operates in two distinct modes depending on the user's request. Determine the user's intent and follow the appropriate workflow.
 
-## Steps
-1. **Scrape New Jobs**: Run the unified tracker script to fetch the latest postings.
-   * `./.venv/bin/python phd_tracker.py scrape`
-2. **Extract Unreviewed**: Extract only the new jobs so you don't have to read the massive database directly. (Note: You can also use `./.venv/bin/python phd_tracker.py extract --status pending` in the future if the user asks you to list pending jobs).
-   * `./.venv/bin/python phd_tracker.py extract --status unreviewed`
-   * (This creates a tiny `.tmp/unreviewed.json` file for you to read)
+## Mode 1: Discovery (Finding New Jobs)
+Use this mode when the user says "Run the PhD tracker", "Check for new jobs", or wants a daily rundown.
+
+1. **Scrape New Jobs**: Run `./.venv/bin/python phd_tracker.py scrape`
+2. **Extract Unreviewed**: Run `./.venv/bin/python phd_tracker.py extract --status unreviewed`
 3. **Evaluate Jobs**: Read `.tmp/unreviewed.json` and `user_profile.md`. 
-   * **Circuit Breaker:** If `.tmp/unreviewed.json` is empty or contains 0 jobs, STOP execution immediately and output "No new jobs found today."
-   * For each unreviewed job:
-     * Read the job's `description`.
-     * Evaluate it strictly against the user profile constraints (e.g., London, Fully Funded).
-     * Verify if it aligns with their **applied ML/Ecology interests**.
-     * Decide its status: `pending` (good match), `rejected` (poor match), or `manual_review` (if the description is highly ambiguous or you are unsure if it fits).
-4. **Update Database**: Create a file named `.tmp/evaluations.json` with a dictionary mapping job IDs to your decisions (e.g. `{"p123": {"status": "pending", "reason": "Matches applied ML interests"}}`). Then run the apply command to securely update the database without writing the entire JSON tree yourself.
-   * `./.venv/bin/python phd_tracker.py apply .tmp/evaluations.json`
-5. **Supervisor Research**: For every job you just moved to `pending`, you MUST invoke a `research` subagent (using the `invoke_subagent` tool) to search the web for the lead supervisor and return their background, **primary research interests**, and notable recent publications. Do NOT just extract their name from the description.
-   * **Concurrent Invocation:** To save time, pass an array of all required subagents into a *single* `invoke_subagent` tool call so they run concurrently.
-   * **Graceful Fallback:** Instruct each subagent: "If you cannot find clear information within 2 web searches, return *Insufficient online presence*."
-6. **Deliver Rundown**: Output a direct chat message containing a comprehensive daily rundown of ALL newly processed jobs. Do not ask for user input to approve/reject them—just provide the static report.
-   * **For Rejected Jobs:** List the Title, a one-line summary, and a clear 1-sentence explanation of why you rejected it.
-   * **For Manual Review Jobs:** List the Title, a one-line summary, and specifically explain what information is missing or ambiguous that prevented you from making a decision.
-   * **For Pending Jobs (The "One-Stop-Shop" Summary):** Provide a comprehensive breakdown:
-     - **Basic Info:** Title (with link), University, and School/Department.
-     - **Project Overview:** A small summary of the project and what it entails.
-     - **Ideal Candidate:** The specific student profile they are looking for (skills, background, requirements).
-     - **Why it Fits:** A one-line summary of why it matches the user's constraints.
-     - **Supervisor Profile:** The deep-dive research returned by your subagent (background, interests, publications).
-   * If there were no new jobs today, output "No new jobs found today."
+   * **Circuit Breaker:** If `.tmp/unreviewed.json` is empty, output "No new jobs found today." and stop.
+   * Decide status: `pending` (good match), `rejected` (poor match), or `manual_review` (ambiguous).
+4. **Update Database**: Create `.tmp/evaluations.json` mapping job IDs to your decisions (e.g. `{"p123": {"status": "pending", "reason": "Matches applied ML interests"}}`). Then run `./.venv/bin/python phd_tracker.py apply .tmp/evaluations.json`.
+5. **Supervisor Research**: For every job moved to `pending`, invoke a `research` subagent to search for the lead supervisor's background, research interests, and publications. Run subagents concurrently via a single `invoke_subagent` call. (Fallback: "Insufficient online presence").
+6. **Deliver Rundown**: Output a comprehensive rundown:
+   * **Rejected Jobs:** Title, summary, 1-sentence reason.
+   * **Manual Review:** Title, summary, what is ambiguous.
+   * **Pending Jobs:** Title (with link), University, Project Overview, Ideal Candidate, Why it Fits, Supervisor Profile (from research subagents).
+
+## Mode 2: ATS Tracking (Managing Existing Jobs)
+Use this mode when the user wants to update a job's status, add a timeline note, shortlist a job, or view their pipeline.
+
+**Valid ATS Statuses:** 
+`pending` (Initial match), `shortlisted`, `contacted`, `applied`, `interviewing`, `offered`, `rejected_post_app`.
+
+1. **Viewing the Pipeline (Kanban Board):** 
+   If the user asks to see their tracked jobs, read `jobs_database.json` and present a Kanban-style markdown board grouping jobs by their ATS status (ignore `unreviewed` or `rejected` unless specifically asked). Display the most recent `timeline` event for each if available.
+2. **Updating a Job:**
+   If the user asks to move a job to a new status (e.g., "Move p123 to shortlisted and add note 'emailed supervisor'"):
+   * Run the update CLI command: `./.venv/bin/python phd_tracker.py update <job_id> --status <status> --note "<note>"`
+   * Example: `./.venv/bin/python phd_tracker.py update p123 --status shortlisted --note "Emailed Dr. Smith"`
+   * Do NOT edit `jobs_database.json` directly. Always use the CLI.
+3. **Adding Timeline Notes:**
+   If the user just wants to add an event without changing status (e.g., "Add note to p123: Received reply"):
+   * Run: `./.venv/bin/python phd_tracker.py update <job_id> --note "Received reply"`
+4. **Confirmation:** Let the user know the update was successful and display the job's new status and latest timeline entry.
