@@ -22,8 +22,10 @@ def load_db():
         return {}
 
 def save_db(db):
-    with open(DB_PATH, "w") as f:
+    tmp_path = DB_PATH + ".tmp"
+    with open(tmp_path, "w") as f:
         json.dump(db, f, indent=2)
+    os.replace(tmp_path, DB_PATH)
 
 def get_target_url(key):
     try:
@@ -209,6 +211,10 @@ def command_apply(evals_file):
         pass
 
 def command_update(job_id, status, note):
+    if not status and not note:
+        print("Error: Must provide at least --status or --note to update.", file=sys.stderr)
+        sys.exit(1)
+
     db = load_db()
     if job_id not in db:
         print(f"Error: Job ID '{job_id}' not found.", file=sys.stderr)
@@ -220,10 +226,10 @@ def command_update(job_id, status, note):
         job['status'] = status
         
     if note:
-        if 'timeline' not in job:
-            job['timeline'] = []
-        timestamp = datetime.datetime.now().isoformat()
-        job['timeline'].append({"timestamp": timestamp, "note": note})
+        job.setdefault('timeline', []).append({
+            "timestamp": datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            "note": note
+        })
         
     save_db(db)
     print(f"Successfully updated job '{job_id}'.", file=sys.stderr)
