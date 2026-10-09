@@ -12,7 +12,5 @@ cv.pdf
 # OS files
 .DS_Store
 user_profile.md
-daily_rundown.md
-unreviewed.json
-evaluations.json
+.tmp/
 generate_report.py

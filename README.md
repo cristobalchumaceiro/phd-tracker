@@ -15,7 +15,7 @@ The system acts as your personal AI assistant. When triggered, it fetches new ro
 *   `requirements.txt` - Python dependencies.
 *   *(Generated)* `jobs_database.json` - Local state machine tracking `unreviewed`, `pending`, and `rejected` jobs.
 
-*(Note: During execution, the agent may generate temporary files like `unreviewed.json` and `evaluations.json`. These act as a safe "data airlock" to prevent database corruption and are automatically cleaned up when the script finishes).*
+*(Note: During execution, the agent safely interacts with the database by reading and writing temporary data payloads into a hidden `.tmp/` directory (e.g. `.tmp/unreviewed.json` and `.tmp/evaluations.json`). This avoids directly loading the large main database file. The `.tmp/` directory is automatically created and deleted during execution).*
 
 ## Setup & Execution
 

@@ -12,15 +12,15 @@ Follow these exact steps to update the job database and deliver the daily rundow
 1. **Scrape New Jobs**: Run the unified tracker script to fetch the latest postings.
    * `./.venv/bin/python phd_tracker.py scrape`
 2. **Extract Unreviewed**: Extract only the new jobs so you don't have to read the massive database directly. (Note: You can also use `./.venv/bin/python phd_tracker.py extract --status pending` in the future if the user asks you to list pending jobs).
-   * `./.venv/bin/python phd_tracker.py extract --status unreviewed --out unreviewed.json`
-   * (This creates a tiny `unreviewed.json` file for you to read)
-3. **Evaluate Jobs**: Read `unreviewed.json` and `user_profile.md`. For each unreviewed job:
+   * `./.venv/bin/python phd_tracker.py extract --status unreviewed`
+   * (This creates a tiny `.tmp/unreviewed.json` file for you to read)
+3. **Evaluate Jobs**: Read `.tmp/unreviewed.json` and `user_profile.md`. For each unreviewed job:
    * Read the job's `description`.
    * Evaluate it strictly against the user profile constraints (e.g., London, Fully Funded).
    * Verify if it aligns with their **applied ML/Ecology interests**.
    * Decide if it should be `pending` (good match) or `rejected` (poor match).
-4. **Update Database**: Create a file named `evaluations.json` with a dictionary mapping job IDs to your decisions (e.g. `{"p123": {"status": "pending", "reason": "Matches applied ML interests"}}`). Then run the apply command to securely update the database without writing the entire JSON tree yourself.
-   * `./.venv/bin/python phd_tracker.py apply evaluations.json`
+4. **Update Database**: Create a file named `.tmp/evaluations.json` with a dictionary mapping job IDs to your decisions (e.g. `{"p123": {"status": "pending", "reason": "Matches applied ML interests"}}`). Then run the apply command to securely update the database without writing the entire JSON tree yourself.
+   * `./.venv/bin/python phd_tracker.py apply .tmp/evaluations.json`
 5. **Supervisor Research**: For every job you just moved to `pending`, invoke a `research` subagent (using `invoke_subagent`). Instruct the subagent to research the lead supervisor of the project and return a short summary of their background, **primary research interests**, and notable recent publications.
 6. **Deliver Rundown**: Output a direct chat message containing a highly concise daily rundown of ALL newly processed jobs.
    * **For Rejected Jobs:** List the Title, a one-line summary, and a clear 1-sentence explanation of why you rejected it.

@@ -200,8 +200,10 @@ def command_apply(evals_file):
     print(f"Applied {updated_count} evaluations to database.", file=sys.stderr)
     try:
         os.remove(evals_file)
-        if os.path.exists("unreviewed.json"):
-            os.remove("unreviewed.json")
+        if os.path.exists(".tmp/unreviewed.json"):
+            os.remove(".tmp/unreviewed.json")
+        if os.path.exists(".tmp") and not os.listdir(".tmp"):
+            os.rmdir(".tmp")
     except:
         pass
 
@@ -213,7 +215,7 @@ def main():
     
     extract_cmd = subparsers.add_parser("extract", help="Extract jobs of a specific status to a JSON file")
     extract_cmd.add_argument("--status", required=True, help="Status to extract (e.g., unreviewed, pending, rejected)")
-    extract_cmd.add_argument("--out", help="Output file (defaults to <status>.json)")
+    extract_cmd.add_argument("--out", help="Output file (defaults to .tmp/<status>.json)")
     
     apply_cmd = subparsers.add_parser("apply", help="Apply evaluations to the database")
     apply_cmd.add_argument("evals_file", help="JSON file containing evaluations")
@@ -223,7 +225,10 @@ def main():
     if args.command == "scrape":
         command_scrape()
     elif args.command == "extract":
-        out_file = args.out if args.out else f"{args.status}.json"
+        out_file = args.out if args.out else f".tmp/{args.status}.json"
+        out_dir = os.path.dirname(out_file)
+        if out_dir:
+            os.makedirs(out_dir, exist_ok=True)
         command_extract(args.status, out_file)
     elif args.command == "apply":
         command_apply(args.evals_file)
