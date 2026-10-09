@@ -11,8 +11,8 @@ Follow these exact steps to update the job database and deliver the daily rundow
 ## Steps
 1. **Scrape New Jobs**: Run the unified tracker script to fetch the latest postings.
    * `./.venv/bin/python phd_tracker.py scrape`
-2. **Extract Unreviewed**: Extract only the new jobs so you don't have to read the massive database directly.
-   * `./.venv/bin/python phd_tracker.py get-unreviewed`
+2. **Extract Unreviewed**: Extract only the new jobs so you don't have to read the massive database directly. (Note: You can also use `./.venv/bin/python phd_tracker.py extract --status pending` in the future if the user asks you to list pending jobs).
+   * `./.venv/bin/python phd_tracker.py extract --status unreviewed --out unreviewed.json`
    * (This creates a tiny `unreviewed.json` file for you to read)
 3. **Evaluate Jobs**: Read `unreviewed.json` and `user_profile.md`. For each unreviewed job:
    * Read the job's `description`.

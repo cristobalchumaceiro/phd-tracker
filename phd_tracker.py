@@ -173,12 +173,12 @@ def command_scrape():
         browser.close()
     print("Scraping complete.", file=sys.stderr)
 
-def command_get_unreviewed(out_file):
+def command_extract(status, out_file):
     db = load_db()
-    unreviewed = {k: v for k, v in db.items() if v.get('status') == 'unreviewed'}
+    extracted = {k: v for k, v in db.items() if v.get('status') == status}
     with open(out_file, 'w') as f:
-        json.dump(unreviewed, f, indent=2)
-    print(f"Extracted {len(unreviewed)} unreviewed jobs to {out_file}.", file=sys.stderr)
+        json.dump(extracted, f, indent=2)
+    print(f"Extracted {len(extracted)} '{status}' jobs to {out_file}.", file=sys.stderr)
 
 def command_apply(evals_file):
     db = load_db()
@@ -211,8 +211,9 @@ def main():
     
     subparsers.add_parser("scrape", help="Scrape new jobs and add to database")
     
-    get_unrev = subparsers.add_parser("get-unreviewed", help="Extract unreviewed jobs to a JSON file")
-    get_unrev.add_argument("--out", default="unreviewed.json", help="Output file")
+    extract_cmd = subparsers.add_parser("extract", help="Extract jobs of a specific status to a JSON file")
+    extract_cmd.add_argument("--status", required=True, help="Status to extract (e.g., unreviewed, pending, rejected)")
+    extract_cmd.add_argument("--out", help="Output file (defaults to <status>.json)")
     
     apply_cmd = subparsers.add_parser("apply", help="Apply evaluations to the database")
     apply_cmd.add_argument("evals_file", help="JSON file containing evaluations")
@@ -221,8 +222,9 @@ def main():
     
     if args.command == "scrape":
         command_scrape()
-    elif args.command == "get-unreviewed":
-        command_get_unreviewed(args.out)
+    elif args.command == "extract":
+        out_file = args.out if args.out else f"{args.status}.json"
+        command_extract(args.status, out_file)
     elif args.command == "apply":
         command_apply(args.evals_file)
 
