@@ -23,7 +23,9 @@ Follow these exact steps to update the job database and deliver the daily rundow
      * Decide its status: `pending` (good match), `rejected` (poor match), or `manual_review` (if the description is highly ambiguous or you are unsure if it fits).
 4. **Update Database**: Create a file named `.tmp/evaluations.json` with a dictionary mapping job IDs to your decisions (e.g. `{"p123": {"status": "pending", "reason": "Matches applied ML interests"}}`). Then run the apply command to securely update the database without writing the entire JSON tree yourself.
    * `./.venv/bin/python phd_tracker.py apply .tmp/evaluations.json`
-5. **Supervisor Research**: For every job you just moved to `pending`, you MUST invoke a `research` subagent (using the `invoke_subagent` tool). Do NOT just extract the supervisor's name from the job description. You must instruct the subagent to search the web for the lead supervisor and return a short summary of their background, **primary research interests**, and notable recent publications.
+5. **Supervisor Research**: For every job you just moved to `pending`, you MUST invoke a `research` subagent (using the `invoke_subagent` tool) to search the web for the lead supervisor and return their background, **primary research interests**, and notable recent publications. Do NOT just extract their name from the description.
+   * **Concurrent Invocation:** To save time, pass an array of all required subagents into a *single* `invoke_subagent` tool call so they run concurrently.
+   * **Graceful Fallback:** Instruct each subagent: "If you cannot find clear information within 2 web searches, return *Insufficient online presence*."
 6. **Deliver Rundown**: Output a direct chat message containing a comprehensive daily rundown of ALL newly processed jobs. Do not ask for user input to approve/reject them—just provide the static report.
    * **For Rejected Jobs:** List the Title, a one-line summary, and a clear 1-sentence explanation of why you rejected it.
    * **For Manual Review Jobs:** List the Title, a one-line summary, and specifically explain what information is missing or ambiguous that prevented you from making a decision.
