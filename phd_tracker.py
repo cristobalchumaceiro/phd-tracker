@@ -5,6 +5,7 @@ import sys
 import re
 import os
 import random
+import datetime
 from bs4 import BeautifulSoup
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
@@ -207,6 +208,26 @@ def command_apply(evals_file):
     except:
         pass
 
+def command_update(job_id, status, note):
+    db = load_db()
+    if job_id not in db:
+        print(f"Error: Job ID '{job_id}' not found.", file=sys.stderr)
+        sys.exit(1)
+        
+    job = db[job_id]
+    
+    if status:
+        job['status'] = status
+        
+    if note:
+        if 'timeline' not in job:
+            job['timeline'] = []
+        timestamp = datetime.datetime.now().isoformat()
+        job['timeline'].append({"timestamp": timestamp, "note": note})
+        
+    save_db(db)
+    print(f"Successfully updated job '{job_id}'.", file=sys.stderr)
+
 def main():
     parser = argparse.ArgumentParser(description="PhD Tracker CLI")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -220,6 +241,11 @@ def main():
     apply_cmd = subparsers.add_parser("apply", help="Apply evaluations to the database")
     apply_cmd.add_argument("evals_file", help="JSON file containing evaluations")
     
+    update_cmd = subparsers.add_parser("update", help="Update a job's status and add a timeline note")
+    update_cmd.add_argument("job_id", help="The ID of the job to update")
+    update_cmd.add_argument("--status", help="New status for the job")
+    update_cmd.add_argument("--note", help="Note to append to the job's timeline")
+    
     args = parser.parse_args()
     
     if args.command == "scrape":
@@ -232,6 +258,8 @@ def main():
         command_extract(args.status, out_file)
     elif args.command == "apply":
         command_apply(args.evals_file)
+    elif args.command == "update":
+        command_update(args.job_id, args.status, args.note)
 
 if __name__ == "__main__":
     main()
